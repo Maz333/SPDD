@@ -6,6 +6,12 @@ print("Using device:", device)
 # print("Current device:", torch.cuda.current_device() if torch.cuda.is_available() else None)
 # print("Device name:", torch.cuda.get_device_name(0) if torch.cuda.is_available() else None)
 
+# import sys, transformers
+# print("Python:", sys.executable)
+# print("Transformers version:", transformers.__version__)
+# print("TrainingArguments real location:", transformers.training_args.__file__)
+
+
 from datasets import load_dataset
 from transformers import AutoTokenizer
 from dataset.conll_dataset import load_conll_dataset
@@ -41,8 +47,14 @@ def main():
     trainer.train()
 
     # 6. 评估
-    metrics = trainer.evaluate()
-    print(metrics)
+    print("Eval dataset keys:", dataset["test"].column_names)
+    # metrics = trainer.evaluate()
+    # print(metrics)
+    test_metrics = trainer.evaluate(eval_dataset=dataset["test"])
+    print("Test metrics:", test_metrics)
+    trainer.save_model("./best_model")
+
+
 
 if __name__ == "__main__":
     main()

@@ -1,23 +1,26 @@
+import numpy as np
 from seqeval.metrics import precision_score, recall_score, f1_score, accuracy_score
-from dataset.conll_dataset import id2label
+from transformers import EvalPrediction
 
-def compute_metrics(p):
-    predictions, labels = p
-    predictions = predictions.argmax(axis=-1)
+def build_compute_metrics(id2label):
+    def compute_metrics(p: EvalPrediction):
+        preds = np.argmax(p.predictions, axis=-1)
+        labels = p.label_ids
 
-    # 去掉 padding（label = -100 的部分）
-    true_predictions = [
-        [id2label[p] for (p, l) in zip(pred, label) if l != -100]
-        for pred, label in zip(predictions, labels)
-    ]
-    true_labels = [
-        [id2label[l] for (p, l) in zip(pred, label) if l != -100]
-        for pred, label in zip(predictions, labels)
-    ]
+        # 去掉 padding
+        true_predictions = [
+            [id2label[pred] for (pred, lab) in zip(pred_row, label_row) if lab != -100]
+            for pred_row, label_row in zip(preds, labels)
+        ]
+        true_labels = [
+            [id2label[lab] for (pred, lab) in zip(pred_row, label_row) if lab != -100]
+            for pred_row, label_row in zip(preds, labels)
+        ]
 
-    return {
-        "precision": precision_score(true_labels, true_predictions),
-        "recall": recall_score(true_labels, true_predictions),
-        "f1": f1_score(true_labels, true_predictions),
-        "accuracy": accuracy_score(true_labels, true_predictions),
-    }
+        return {
+            "precision": precision_score(true_labels, true_predictions),
+            "recall": recall_score(true_labels, true_predictions),
+            "f1": f1_score(true_labels, true_predictions),
+            "accuracy": accuracy_score(true_labels, true_predictions),
+        }
+    return compute_metrics
