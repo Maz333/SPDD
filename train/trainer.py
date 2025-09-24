@@ -4,7 +4,7 @@ from utils.metrics import compute_metrics
 def build_trainer(model, tokenized_dataset, tokenizer, output_dir="./results"):
     training_args = TrainingArguments(
         output_dir=output_dir,
-        evaluation_strategy="epoch",
+        # evaluation_strategy="epoch",
         save_strategy="epoch",
         learning_rate=5e-5,
         per_device_train_batch_size=16,
@@ -12,7 +12,9 @@ def build_trainer(model, tokenized_dataset, tokenizer, output_dir="./results"):
         num_train_epochs=5,
         weight_decay=0.01,
         logging_dir="./logs",
-        logging_steps=50
+        logging_steps=50,
+        no_cuda=False,   # ✅ 确保允许用 CUDA
+        fp16=True 
     )
 
     trainer = Trainer(

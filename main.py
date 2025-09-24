@@ -1,12 +1,21 @@
+import torch
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print("Using device:", device)
+# print("CUDA available:", torch.cuda.is_available())
+# print("Device count:", torch.cuda.device_count())
+# print("Current device:", torch.cuda.current_device() if torch.cuda.is_available() else None)
+# print("Device name:", torch.cuda.get_device_name(0) if torch.cuda.is_available() else None)
+
 from datasets import load_dataset
 from transformers import AutoTokenizer
 from dataset.conll_dataset import load_conll_dataset
 from model.ner_model import build_model
 from train.trainer import build_trainer
 
+
 def main():
     # 1. 加载分词器
-    tokenizer = AutoTokenizer.from_pretrained("bert-base-chinese")
+    tokenizer = AutoTokenizer.from_pretrained("./bert-base-chinese")
 
     # 2. 加载数据
     dataset = load_conll_dataset(
@@ -23,6 +32,7 @@ def main():
     )
     model.config.label2id = dataset.label2id
     model.config.id2label = dataset.id2label
+    model.to(device)
 
     # 4. 构建 Trainer
     trainer = build_trainer(model, dataset, tokenizer)
